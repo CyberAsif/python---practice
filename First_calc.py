@@ -1,69 +1,73 @@
 import tkinter as tk
-from tkinter import font
 
-def create_calculator():
-    """
-    Creates a GUI calculator using tkinter.
-    Supports basic arithmetic operations and clear functionality.
-    """
-    root = tk.Tk()
-    root.title("Calculator")
-    root.geometry("300x400")
-    root.resizable(False, False)
+root = tk.Tk()
+root.title("Phone Calculator")
+root.geometry("330x520")
+root.config(bg="#1C1C1C")
+root.resizable(False, False)
 
-    # Custom font
-    custom_font = font.Font(size=14)
+# ---------------- Display ----------------
+display = tk.Entry(root, font=("Helvetica", 28), bg="#1C1C1C", fg="white",
+                   border=0, justify="right", insertbackground="white")
+display.grid(row=0, column=0, columnspan=4, ipadx=8, ipady=25, padx=10, pady=(20, 10), sticky="nsew")
 
-    # Entry widget for display
-    display = tk.Entry(root, font=custom_font, bd=10, insertwidth=2, width=14, borderwidth=4, justify="right")
-    display.grid(row=0, column=0, columnspan=4, pady=10)
-
-    # Button layout
-    buttons = [
-        '7', '8', '9', '/',
-        '4', '5', '6', '*',
-        '1', '2', '3', '-',
-        '0', '.', '=', '+',
-        'C'
-    ]
-
-    # Button click function
-    def button_click(item):
-        if item == '=':
-            try:
-                result = eval(display.get())
-                display.delete(0, tk.END)
-                display.insert(tk.END, str(result))
-            except:
-                display.delete(0, tk.END)
-                display.insert(tk.END, "Error")
-        elif item == 'C':
+# ---------------- Functions ----------------
+def click(event):
+    text = event.widget.cget("text")
+    if text == "=":
+        try:
+            expression = display.get().replace("×", "*").replace("÷", "/")
+            result = eval(expression)
             display.delete(0, tk.END)
+            display.insert(tk.END, result)
+        except Exception:
+            display.delete(0, tk.END)
+            display.insert(tk.END, "Error")
+    elif text == "C":
+        display.delete(0, tk.END)
+    elif text == "⌫":
+        display.delete(len(display.get())-1)
+    else:
+        display.insert(tk.END, text)
+
+# ---------------- Colors ----------------
+colors = {
+    "nums": "#333333",
+    "ops": "#FF9500",
+    "func": "#A5A5A5"
+}
+
+# ---------------- Buttons ----------------
+buttons = [
+    ["C", "⌫", "÷", "×"],
+    ["7", "8", "9", "-"],
+    ["4", "5", "6", "+"],
+    ["1", "2", "3", "="],
+    ["0", ".", ""]
+]
+
+# ---------------- Grid Layout ----------------
+for i in range(5):
+    root.rowconfigure(i+1, weight=1)
+for j in range(4):
+    root.columnconfigure(j, weight=1)
+
+for i, row in enumerate(buttons):
+    for j, b in enumerate(row):
+        if b == "":
+            continue
+        if b in ["÷", "×", "-", "+", "="]:
+            color = colors["ops"]
+        elif b in ["C", "⌫"]:
+            color = colors["func"]
         else:
-            display.insert(tk.END, item)
+            color = colors["nums"]
+        btn = tk.Button(root, text=b, bg=color, fg="white",
+                        font=("Helvetica", 22, "bold"), bd=0, relief="flat")
+        btn.grid(row=i+1, column=j, sticky="nsew", padx=4, pady=4)
+        btn.bind("<Button-1>", click)
 
-    # Create buttons
-    row = 1
-    col = 0
-    for button in buttons:
-        if button == '=':
-            tk.Button(root, text=button, padx=20, pady=20, font=custom_font, command=lambda b=button: button_click(b)).grid(row=row, column=col, columnspan=2, sticky="nsew")
-        elif button == 'C':
-            tk.Button(root, text=button, padx=20, pady=20, font=custom_font, command=lambda b=button: button_click(b)).grid(row=row+1, column=col, columnspan=4, sticky="nsew")
-        else:
-            tk.Button(root, text=button, padx=20, pady=20, font=custom_font, command=lambda b=button: button_click(b)).grid(row=row, column=col, sticky="nsew")
-        col += 1
-        if col > 3:
-            col = 0
-            row += 1
+# Widen the 0 button
+root.grid_columnconfigure(0, weight=2)
 
-    # Configure grid weights
-    for i in range(5):
-        root.grid_rowconfigure(i, weight=1)
-    for i in range(4):
-        root.grid_columnconfigure(i, weight=1)
-
-    root.mainloop()
-
-if __name__ == "__main__":
-    create_calculator()
+root.mainloop()
